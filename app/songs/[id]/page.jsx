@@ -19,6 +19,7 @@ export default function SongDetailPage() {
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [recommendedSongs, setRecommendedSongs] = useState([])
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const toast = useRef(null)
   const initialized = useRef(false)
 
@@ -36,7 +37,9 @@ export default function SongDetailPage() {
             const foundSong = result.data.find(s => String(s.id) === String(params.id))
             console.log('Found song:', foundSong)
             if (foundSong) {
+              console.log('Song image URL:', foundSong.image_url)
               setSong(foundSong)
+              setImageError(false)
               
               // Get recommended songs
               const recommended = result.data
@@ -142,12 +145,25 @@ export default function SongDetailPage() {
             <Card className="shadow-lg mb-6">
               <div className="space-y-6">
                 {/* Song Image with Click to Zoom */}
-                <div className="relative bg-white rounded-lg overflow-hidden cursor-pointer group p-4 flex items-center justify-center" style={{ minHeight: '300px' }} onClick={() => setShowImagePreview(true)}>
-                  <img
-                    src={song.image_url}
-                    alt={song.title}
-                    className="max-w-full max-h-80 object-contain group-hover:opacity-80 transition-opacity"
-                  />
+                <div className="relative bg-white rounded-lg overflow-hidden cursor-pointer group p-4 flex items-center justify-center border border-gray-200" style={{ minHeight: '400px' }} onClick={() => setShowImagePreview(true)}>
+                  {song.image_url && (
+                    <img
+                      src={song.image_url}
+                      alt={song.title}
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        setImageError(true)
+                      }}
+                      className="max-w-full max-h-96 object-contain group-hover:opacity-80 transition-opacity"
+                      style={{ maxHeight: '380px' }}
+                    />
+                  )}
+                  {imageError && (
+                    <div className="text-center text-gray-400">
+                      <i className="pi pi-image text-6xl mb-2"></i>
+                      <p>Image not available</p>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center pointer-events-none">
                     <i className="pi pi-zoom-in text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity"></i>
                   </div>
@@ -312,11 +328,14 @@ export default function SongDetailPage() {
         style={{ width: '95vw', height: '95vh' }}
         className="max-w-full"
       >
-        <div className="flex items-center justify-center p-4 h-full bg-gray-100">
+        <div className="flex items-center justify-center p-4 h-full bg-white">
           <img
             src={song.image_url}
             alt={song.title}
             className="max-w-full max-h-full object-contain"
+            onError={(e) => {
+              e.target.innerHTML = '<div style="text-align: center; color: gray;"><i class="pi pi-image" style="font-size: 3rem;"></i><p>Image not available</p></div>'
+            }}
           />
         </div>
       </Dialog>
